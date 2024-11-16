@@ -1,0 +1,62 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")  
+}
+
+model FlightPriceSQL {
+  id                Int       @id @default(autoincrement())
+  price             Int?
+  currency          String?
+  
+  FlightDataSQL FlightDataSQL[]
+}
+
+model FlightDataSQL {
+  id Int @id @unique @default(autoincrement())
+  from_airport_code String?
+  from_country String?
+  dest_airport_code String?
+  dest_country String?
+  aircraft_type String?
+  airline_name String?
+  flight_number String?
+  scan_date String?
+  flightPriceSQLId Int
+
+  FlightPriceSQL      FlightPriceSQL @relation(fields: [flightPriceSQLId], references: [id])
+
+  FlightEmissionSQL FlightEmissionSQL[]
+}
+
+model FlightEmissionSQL {
+  id                Int       @id @default(autoincrement())
+  co2_emissions     Int?
+  avg_co2_emission_for_this_route Int?
+  co2_percentage    String?
+  flightDataSQLId               Int
+
+  FlightDataSQL      FlightDataSQL @relation(fields: [flightDataSQLId], references: [id])
+}
+
+model FlightMergedSQL {
+  id                              Int      @id @default(autoincrement())
+  price                           Int?
+  currency                        String?
+  flight_data                     Json?
+  updateAt                        DateTime? @default(now())
+}
+
+model SyncTimeSQL {
+  id         Int       @id @default(autoincrement())
+  lastSync   DateTime
+}
